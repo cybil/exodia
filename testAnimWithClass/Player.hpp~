@@ -1,0 +1,10 @@
+
+#ifndef		PLAYER_HPP__
+# define	PLAYER_HPP__
+
+class Player
+{
+
+};
+
+#endif		// ! PLAYER_HPP__

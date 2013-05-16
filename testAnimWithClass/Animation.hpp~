@@ -1,0 +1,10 @@
+
+#ifndef		ANIMATION_HPP__
+# define	ANIMATION_HPP__
+
+class Animation
+{
+
+};
+
+#endif		// ! ANIMATION_HPP__

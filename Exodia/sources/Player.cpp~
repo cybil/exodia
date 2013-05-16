@@ -1,0 +1,152 @@
+
+#include <iostream>
+#include "SFML/Graphics/String.hpp"
+#include "Player.hpp"
+
+void		Player::affMessage(sf::RenderWindow &win, const std::string &str)
+{
+  sf::Font	myFont;
+
+  if (!myFont.LoadFromFile(TTF))
+    std::cerr << "Error during loading file " << TTF << std::endl;
+
+  sf::String	Text(str, myFont, 50);
+  Text.Move(250, 280);
+  Text.SetColor(sf::Color(0, 0, 0));
+  win.Draw(Text);
+  win.Display();
+}
+
+void		Player::endStage(sf::RenderWindow &win, const std::string &str)
+{
+  _map->DrawLife(win);
+  affMessage(win, str);
+  sleep(END_TIME);
+  win.Close();
+}
+
+OBJECT		Player::checkCollision(float x, float y, float xo, float yo)
+{
+  std::cerr << "x = " << x << " // y = " << y << std::endl;
+  std::cerr << "xo = " << xo << " // yo = " << yo << std::endl;
+  std::cerr << " ------------- x = " << (int)(x / SP_SIZE)  << " // y = " << (int)(y / SP_SIZE) << std::endl;
+  std::cerr << " ------------- xo = " << (int)(xo / SP_SIZE)  << " // yo = " << (int)(yo / SP_SIZE) << std::endl;
+
+  int		xx = (int)(xo / SP_SIZE);
+  int		yy = (int)(yo / SP_SIZE);
+
+  if (_map->isWall(xx, yy))
+  {
+    if (((x + SP_SIZE < xx * SP_SIZE) && (x + SP_SIZE > xx * SP_SIZE + SP_SIZE))
+	|| ((x > xx * SP_SIZE + SP_SIZE) && (x < xx * SP_SIZE))
+	|| ((y + SP_SIZE < yy * SP_SIZE) && (y + SP_SIZE > yy * SP_SIZE + SP_SIZE))
+	|| (y > yy * SP_SIZE + SP_SIZE) && (y < yy * SP_SIZE))
+      return NONE;
+    return WALL;
+  }
+  //     || _map->isWall((int)(x2 / SP_SIZE), (int)(y2 / SP_SIZE)))
+  //     return WALL;
+  // if (_map->isHole((int)(x / SP_SIZE), (int)(y / SP_SIZE)))
+  //   return HOLE;
+  return NONE;
+}
+
+void		Player::Initialize()
+{
+  x = y = 50;
+  moveSpeed = 200;
+  currentFrameX = currentFrameY = 0;
+  playerAnimation.Initialize(x, y, 4, 4);
+}
+
+void		Player::LoadContent()
+{
+  if (!playerImage.LoadFromFile(MUMMY))
+  {
+    std::cerr << "Error loading file." << std::endl;
+    return ;
+  }
+  playerAnimation.setImage(playerImage);
+}
+
+void		Player::fallHole(sf::RenderWindow &win)
+{
+  _map->setLife(_map->getLife() - 1);
+  affMessage(win, "You fell in a hole.");
+  sleep(2);
+  x = 50;
+  y = 50;
+}
+
+void		Player::Update(sf::RenderWindow &win)
+{
+  playerAnimation.setActive(true);
+  if (win.GetInput().IsKeyDown(sf::Key::Right))
+  {
+    if (checkCollision(x, y, x + SP_SIZE + (moveSpeed * win.GetFrameTime()), y) <= HOLE)
+  	// || checkCollision(x + SP_SIZE, y + SP_SIZE,
+	// 		  x + SP_SIZE + (moveSpeed * win.GetFrameTime()), y + SP_SIZE - 1) <= HOLE)
+      x += moveSpeed * win.GetFrameTime();
+    currentFrameY = 1;
+  }
+  else if (win.GetInput().IsKeyDown(sf::Key::Left))
+  {
+    if (checkCollision(x, y, x - (moveSpeed * win.GetFrameTime()), y) <= HOLE)
+  	// && checkCollision(x, y + SP_SIZE) <= HOLE)
+      x -= moveSpeed * win.GetFrameTime();
+    currentFrameY = 0;
+  }
+  else if (win.GetInput().IsKeyDown(sf::Key::Up))
+  {
+    if  (checkCollision(x, y, x, y - (moveSpeed * win.GetFrameTime())) <= HOLE)
+  	 // && checkCollision(x + SP_SIZE, y) <= HOLE)
+      y -= moveSpeed * win.GetFrameTime();
+    currentFrameY = 2;
+  }
+  else if (win.GetInput().IsKeyDown(sf::Key::Down))
+  {
+    if (checkCollision(x, y, x, y + SP_SIZE + (moveSpeed * win.GetFrameTime())) <= HOLE)
+  	// && checkCollision(x + SP_SIZE, y + SP_SIZE) <= HOLE)
+      y += moveSpeed * win.GetFrameTime();
+    currentFrameY = 3;
+  }
+  else
+    playerAnimation.setActive(false);
+
+
+  if (_map->isDoor((x + 6) / SP_SIZE, (y + 6) / SP_SIZE) == true)
+  {
+      std::cerr << "You finish this stage. Good Game !" << std::endl;
+      this->endStage(win, WIN);
+  }
+  // if (_map->isHole((x + SP_SIZE) / SP_SIZE, (y + SP_SIZE) / SP_SIZE) == true)
+  //   fallHole(win);
+  if (win.GetInput().IsKeyDown(sf::Key::Space))
+    if (_map->isDalle((x + 6) / SP_SIZE, (y + 6) / SP_SIZE) == true)
+      _map->activDalle();
+
+  if (_map->getLife() == -1)
+    this->endStage(win, LOST);
+
+  playerAnimation.setPosition(1, x);
+  playerAnimation.setPosition(2, y);
+  playerAnimation.setCurrentFrame(2, currentFrameY);
+  playerAnimation.Update(win);
+}
+
+void		Player::Draw(sf::RenderWindow &win)
+{
+  playerAnimation.Draw(win);
+}
+
+
+Player::Player(Map *gameMap)
+{
+  _map = gameMap;
+}
+
+Player::~Player()
+{
+
+}
+

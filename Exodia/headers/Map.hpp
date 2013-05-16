@@ -1,0 +1,77 @@
+
+
+#ifndef		MAP_HPP__
+# define	MAP_HPP__
+
+#include <SFML/Graphics.hpp>
+#include <string>
+#include <map>
+
+//const std::string	WALL1 = "img/wall2.png";
+const std::string	WALL1 = "img/ground.png";
+//const std::string	BACKGRND = "img/background.png";
+const std::string	BACKGRND = "img/bg1.png";
+const std::string	BACKGRNDTOOL = "img/backgroundTool.png";
+const std::string	DALLE1 = "img/dalle1.png";
+const std::string	DALLE2 = "img/dalle2.png";
+const std::string	DOOR1 = "img/door1.png";
+const std::string	HOLE1 = "img/hole1.png";
+const std::string	HEART1 = "img/heart1.png";
+const std::string	HEART2 = "img/heart2.png"; // actually useless
+const std::string	HEART3 = "img/heart3.png";
+
+const int		START_LIFE = 3;
+
+class Map
+{
+public:
+  Map(const std::string &);
+  Map(const Map &);
+  Map();
+  ~Map();
+
+  void					setMap(const std::string &);
+  void					Draw(sf::RenderWindow &);
+  void					DrawLife(sf::RenderWindow &);
+  void					activDalle();
+  void					initSprites();
+
+  const std::string			&getLine(int);
+  const std::map<int, std::string>	&getMap() const;
+  bool					getActiv() const;
+  int					getLife() const;
+  void					setLife(int);
+  bool					isWall(int, int);
+  bool					isDalle(int, int);
+  bool					isDoor(int, int);
+  bool					isHole(int, int);
+
+private:
+  std::map<int, std::string>	_map;
+  bool				_activ;
+  int				_life;
+
+  sf::Sprite			_spriteWall;
+  sf::Sprite			_spriteSand;
+  sf::Sprite			_spriteTool;
+  sf::Sprite			_spriteDalle;
+  sf::Sprite			_spriteDalleAct;
+  sf::Sprite			_spriteDoor;
+  sf::Sprite			_spriteHole;
+  sf::Sprite			_spriteHeart1;
+  sf::Sprite			_spriteHeart2;
+  sf::Sprite			_spriteHeart3;
+
+  sf::Image			_imgWall;
+  sf::Image			_imgSand;
+  sf::Image			_imgTool;
+  sf::Image			_imgDalle;
+  sf::Image			_imgDalleAct;
+  sf::Image			_imgDoor;
+  sf::Image			_imgHole;
+  sf::Image			_imgHeart1;
+  sf::Image			_imgHeart2;
+  sf::Image			_imgHeart3;
+};
+
+#endif		// ! MAP_HPP__

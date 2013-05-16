@@ -1,0 +1,17 @@
+
+#include "Player.hpp"
+
+Player::Player(std::pair<int> &coord, int life)
+{
+  
+}
+
+Player::Player(Player &cpy)
+{
+  
+}
+
+Player::~Player()
+{
+  std::cerr << "You are dead !" << std::endl;
+}

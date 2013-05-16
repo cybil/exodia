@@ -1,0 +1,17 @@
+
+#ifndef		PLAYER_HPP__
+# define	PLAYER_HPP__
+
+class Player
+{
+public:
+  Player(std::pair<int> &, int);
+  Player(Player &);
+  ~Player();
+
+private:
+
+
+};
+
+#endif		// ! PLAYER_HPP__
