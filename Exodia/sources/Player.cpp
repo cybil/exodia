@@ -136,7 +136,7 @@ void		Player::Update(sf::RenderWindow &win)
     	&& (checkCollision(x, y, x + SP_SIZE, y - (moveSpeed * win.GetFrameTime())) <= HOLE))
     {
       _isJumping = true;
-      _jumpStep = 3;
+      _jumpStep = 15;
     }
     currentFrameY = 2;
     playerAnimation.setActive(true);
@@ -153,10 +153,11 @@ void		Player::Update(sf::RenderWindow &win)
   falling(x, y, win);
   if (_isJumping == true && _jumpStep > 0)
   {
+    std::cerr << "win.GetFrameTime() = " << win.GetFrameTime() << std::endl;
     // y -= moveSpeed * win.GetFrameTime() + 10; // Essayer de garder plutot un modele comme ca...
     if (checkCollision(x, y, x, y - (moveSpeed * win.GetFrameTime())) <= HOLE
     	&& (checkCollision(x, y, x + SP_SIZE, y - (moveSpeed * win.GetFrameTime())) <= HOLE))
-      y -= 50;
+      y -= moveSpeed * win.GetFrameTime() * 3;
     _jumpStep--;
     _isFalling = false;
   }
@@ -165,8 +166,8 @@ void		Player::Update(sf::RenderWindow &win)
   {
     if (checkCollision(x, y, x, y + SP_SIZE + (moveSpeed * win.GetFrameTime())) <= HOLE
 	&& (checkCollision(x, y, x + SP_SIZE, y + SP_SIZE + (moveSpeed * win.GetFrameTime())) <= HOLE))
-      // y += int(moveSpeed * win.GetFrameTime() + 25);
-      y += 50;
+      y += moveSpeed * win.GetFrameTime() * 2;
+      // y += 50;
     std::cout << "y = " << y << std::endl;
     // FAIRE : un system de mise a terre correct (!!), il faut que le y tombe sur des multiple de 50
   }
