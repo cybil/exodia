@@ -64,7 +64,7 @@ OBJECT		Player::checkUnder(float x, float y, float xo, float yo)
 void		Player::Initialize()
 {
   x = 50;
-  y = 50; //////////////////////////
+  y = 500; //////////////////////////
   moveSpeed = 200;
   currentFrameX = currentFrameY = 0;
   playerAnimation.Initialize(x, y, 4, 4);
@@ -88,7 +88,7 @@ void		Player::fallHole(sf::RenderWindow &win, int xx, int yy)
   // Draw(win);
   affMessage(win, "You fell in a hole.");
   sleep(2);
-  x = 500;
+  x = 50;
   y = 500;
 }
 
@@ -100,7 +100,11 @@ void		Player::falling(float x, float y, sf::RenderWindow &win)
   {
     _isFalling = false;
     if (_jumpStep == 0)
-      _isJumping = false;
+    {
+      _isJumping = 0;
+      _canDoubleJump = false;
+      _direction.y = 0.;
+    }
     return ;
   }
   if (obj == NONE)
@@ -110,6 +114,8 @@ void		Player::falling(float x, float y, sf::RenderWindow &win)
 void		Player::Update(sf::RenderWindow &win)
 {
   playerAnimation.setActive(false);
+
+  // RIGHT
   if (win.GetInput().IsKeyDown(sf::Key::Right))
   {
     if (checkCollision(x, y, x + SP_SIZE + (moveSpeed * win.GetFrameTime()), y + MARGE) <= HOLE
@@ -120,6 +126,8 @@ void		Player::Update(sf::RenderWindow &win)
     currentFrameY = 1;
     playerAnimation.setActive(true);
   }
+
+  // LEFT
   if (win.GetInput().IsKeyDown(sf::Key::Left))
   {
     if (checkCollision(x, y, x - (moveSpeed * win.GetFrameTime()), y + MARGE) <= HOLE
@@ -130,48 +138,72 @@ void		Player::Update(sf::RenderWindow &win)
     currentFrameY = 0;
     playerAnimation.setActive(true);
   }
-  if (win.GetInput().IsKeyDown(sf::Key::Space) && _isJumping == false)
+
+  // JUMP
+  if (win.GetInput().IsKeyDown(sf::Key::Space) && (_isJumping == 0 || _canDoubleJump == true))
   {
     if (checkCollision(x, y, x, y - (moveSpeed * win.GetFrameTime())) <= HOLE
     	&& (checkCollision(x, y, x + SP_SIZE, y - (moveSpeed * win.GetFrameTime())) <= HOLE))
     {
-      _isJumping = true;
-      _jumpStep = 15;
+      if (_isJumping <= 2)
+      {
+	std::cerr << "Jump !" << std::endl;
+	_isJumping += 1;
+	_jumpConst = JUMP_CONST;
+	_jumpStep = 9; // 8
+      }
     }
-    currentFrameY = 2;
+    //currentFrameY = 2;
     playerAnimation.setActive(true);
   }
+
+  // DOWN
   if (win.GetInput().IsKeyDown(sf::Key::Down))
   {
     if (checkCollision(x, y, x, y + SP_SIZE + (moveSpeed * win.GetFrameTime())) <= HOLE
 	&& (checkCollision(x, y, x + SP_SIZE, y + SP_SIZE + (moveSpeed * win.GetFrameTime())) <= HOLE))
       y += moveSpeed * win.GetFrameTime();
+    else
+      _direction.y = 0.;
     currentFrameY = 3;
     playerAnimation.setActive(true);
   }
 
-  falling(x, y, win);
-  if (_isJumping == true && _jumpStep > 0)
+  if (win.GetInput().IsKeyDown(sf::Key::Return))
   {
-    std::cerr << "win.GetFrameTime() = " << win.GetFrameTime() << std::endl;
+    x = 50;
+    y = 0;
+  }
+
+  falling(x, y, win);
+  if (_isJumping >= 1 && _jumpStep > 0)
+  {
+    _jumpConst -= _jumpConst / 2 + JUMP_CONST / 600;
+    // std::cerr << "win.GetFrameTime() = " << win.GetFrameTime() << std::endl;
     // y -= moveSpeed * win.GetFrameTime() + 10; // Essayer de garder plutot un modele comme ca...
     if (checkCollision(x, y, x, y - (moveSpeed * win.GetFrameTime())) <= HOLE
     	&& (checkCollision(x, y, x + SP_SIZE, y - (moveSpeed * win.GetFrameTime())) <= HOLE))
-      y -= moveSpeed * win.GetFrameTime() * 3;
+      y -= _jumpConst * win.GetFrameTime();
     _jumpStep--;
     _isFalling = false;
+    std::cerr << "Step = " << _jumpStep << std::endl;
+    // if (_jumpStep <= 2)
+    //   _canDoubleJump = true;
   }
 
   if (_isFalling == true)
   {
     if (checkCollision(x, y, x, y + SP_SIZE + (moveSpeed * win.GetFrameTime())) <= HOLE
 	&& (checkCollision(x, y, x + SP_SIZE, y + SP_SIZE + (moveSpeed * win.GetFrameTime())) <= HOLE))
-      y += moveSpeed * win.GetFrameTime() * 2;
+      y += _direction.y * win.GetFrameTime();
+    else
+      _direction.y = 0.;
       // y += 50;
-    std::cout << "y = " << y << std::endl;
+    // std::cout << "y = " << y << std::endl;
     // FAIRE : un system de mise a terre correct (!!), il faut que le y tombe sur des multiple de 50
   }
 
+  _direction.y += 15.;
   // Ajustement de la position pour eviter des erreurs de collision
   if ((y <= 500 && y >= 497) || y >= 500)
     y = 499;
@@ -202,12 +234,50 @@ void		Player::Draw(sf::RenderWindow &win)
 }
 
 
+Map			*Player::getMap() const
+{
+  return _map;
+}
+
+t_dir			Player::getDir() const
+{
+  return _direction;
+}
+
+bool			Player::isFalling() const
+{
+  return _isFalling;
+}
+
+int			Player::isJumping() const
+{
+  return _isJumping;
+}
+
+int			Player::getJumpStep() const
+{
+  return _jumpStep;
+}
+
 Player::Player(Map *gameMap)
 {
+  _direction.x = 0;
+  _direction.y = 0;
   _map = gameMap;
   _isFalling = false;
-  _isJumping = false;
+  _isJumping = 0;
   _jumpStep = 0;
+  _canDoubleJump = false;
+}
+
+Player::Player(const Player &cpy)
+{
+  _direction = cpy.getDir();
+  _map = cpy.getMap();
+  _isFalling = cpy.isFalling();
+  _isJumping = cpy.isJumping();
+  _jumpStep = cpy.getJumpStep();
+  _canDoubleJump = false;
 }
 
 Player::~Player()

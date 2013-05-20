@@ -14,6 +14,8 @@ const int		SP_SIZE = 50;
 const int		MARGE = 4;
 const int		END_TIME = 3;
 
+const int		JUMP_CONST = 8000;
+
 enum OBJECT
 {
   NONE = 0,
@@ -22,10 +24,17 @@ enum OBJECT
   MONSTER
 };
 
+struct	t_dir
+{
+  float	x;
+  float y;
+};
+
 class Player
 {
 public:
   Player(Map *);
+  Player(const Player &);
   ~Player();
 
   void			Initialize();
@@ -33,6 +42,12 @@ public:
   void			fallHole(sf::RenderWindow &, int, int);
   void			Update(sf::RenderWindow &);
   void			Draw(sf::RenderWindow &);
+
+  Map			*getMap() const;
+  t_dir			getDir() const;
+  bool			isFalling() const;
+  int			isJumping() const;
+  int			getJumpStep() const;
 
 protected:
   Animation		playerAnimation;
@@ -52,8 +67,11 @@ private:
   int			currentFrameY;
   float			moveSpeed;
   bool			_isFalling;
-  bool			_isJumping;
+  int			_isJumping;
   int			_jumpStep;
+  t_dir			_direction;
+  int			_jumpConst;
+  bool			_canDoubleJump;
 };
 
 #endif		// ! PLAYER_HPP__
