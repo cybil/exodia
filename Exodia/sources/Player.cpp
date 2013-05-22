@@ -50,6 +50,8 @@ OBJECT		Player::checkUnder(float x, float y, float xo, float yo)
   int		xx = (int)(xo / SP_SIZE);
   int		yy = (int)(yo / SP_SIZE);
 
+  // std::cerr << "------------------------> xx = " << xx << std::endl;
+  // std::cerr << "------------------------> yy = " << yy << std::endl;
   if (_map->isHole(xx, yy))
     if ((x > xx * SP_SIZE) && (x < xx * SP_SIZE + SP_SIZE))
       return HOLE;
@@ -64,7 +66,7 @@ OBJECT		Player::checkUnder(float x, float y, float xo, float yo)
 void		Player::Initialize()
 {
   x = 50;
-  y = 500; //////////////////////////
+  y = 499; //////////////////////////
   moveSpeed = 200;
   currentFrameX = currentFrameY = 0;
   playerAnimation.Initialize(x, y, 4, 4);
@@ -96,8 +98,11 @@ void		Player::falling(float x, float y, sf::RenderWindow &win)
 {
   OBJECT	obj;
 
-  if ((obj = checkUnder(x + 15, y, x, y + SP_SIZE + (moveSpeed * win.GetFrameTime()))) == WALL)
+  // std::cerr << "y = " << y + SP_SIZE + moveSpeed + 2 << std::endl; // (moveSpeed * win.GetFrameTime()
+  // std::cerr << "x = " << x << std::endl;
+  if ((obj = checkUnder(x + 15, y, x, y + SP_SIZE + 2)) == WALL)
   {
+    std::cerr << "End fall." << std::endl;
     _isFalling = false;
     if (_jumpStep == 0)
     {
@@ -174,6 +179,7 @@ void		Player::Update(sf::RenderWindow &win)
     x = 50;
     y = 0;
   }
+  std::cerr << "x = " << x << " - y = " << y << std::endl;
 
   falling(x, y, win);
   if (_isJumping >= 1 && _jumpStep > 0)
@@ -203,10 +209,29 @@ void		Player::Update(sf::RenderWindow &win)
     // FAIRE : un system de mise a terre correct (!!), il faut que le y tombe sur des multiple de 50
   }
 
-  _direction.y += 15.;
+  if (!_isJumping && !_isFalling)
+  {
+    std::cerr << "---------------------> x = " << x << " - y = " << y << std::endl;
+    if ((y <= 500. && y >= 497.) || (y >= 500. && y <= 505.) || y >= 500.)
+      y = 499;
+    // if ((y <= 450 && y >= 447) || y >= 450)
+    //   y = 449;
+    // if ((y <= 400 && y >= 397) || y >= 400)
+    //   y = 399;
+    // if ((y <= 350 && y >= 347) || y >= 350)
+    //   y = 349;
+    // if ((y <= 300 && y >= 297) || y >= 300)
+    //   y = 299;
+    // if ((y <= 250 && y >= 247) || y >= 250)
+    //   y = 249;
+    // if ((y <= 200 && y >= 197) || y >= 200)
+    //   y = 199;
+    // if ((y <= 150 && y >= 147) || y >= 150)
+    //   y = 149;
+  }
+
+  _direction.y += 20.;
   // Ajustement de la position pour eviter des erreurs de collision
-  if ((y <= 500 && y >= 497) || y >= 500)
-    y = 499;
 
   if (win.GetInput().IsKeyDown(sf::Key::F))
     if (_map->isDalle((x + 6) / SP_SIZE, (y + 6) / SP_SIZE) == true)
